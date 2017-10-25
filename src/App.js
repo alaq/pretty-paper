@@ -9,7 +9,7 @@ class App extends Component {
   constructor () {
     super();
     this.state = {
-      url: '',
+      urls: '',
       articles: []
     }
     this.handleChange = this.handleChange.bind(this);
@@ -21,24 +21,33 @@ class App extends Component {
     this.setState({url: evt.target.value});
   }
 
-  handleSubmit (evt) {
-    evt.preventDefault();
-    this.setState({
-      url: evt.target.url.value
-    })
-    const url = 'https://mercury.postlight.com/parser?url=' + this.state.url;
+  addToArticleList (url) {
+    url = 'https://mercury.postlight.com/parser?url=' + url;
+    console.log('lets get the article', url);
     axios({
       url: url,
       headers: {
         'x-api-key': 'c5XlmpwcTjfLN7MiUi5eVmNzHfQU2bRMFVpgHsLJ',
         'Content-Type': 'application/json'
       }
-    }).then(response => this.setState({articles: this.state.articles.concat(response.data)}))
+    }).then(response => {
+      this.setState({articles: this.state.articles.concat(response.data)})})
+    .catch(console.error);
   }
 
-  handleDelete (evt) {
+  handleSubmit (evt) {
     evt.preventDefault();
+    this.setState({
+      urls: evt.target.urls.value
+    })
+    const urls = evt.target.urls.value;
+    urls.split(' ').forEach(url => this.addToArticleList(url));
+  }
 
+  handleDelete (url) {
+    console.log('lets delete')
+    const articles = this.state.articles.filter(article => article.url !== url);
+    this.setState({articles: articles});
   }
 
   render() {
@@ -58,13 +67,13 @@ class App extends Component {
             value={this.state.url}
             onChange={this.handleChange}
             type="text"
-            name="url"
+            name="urls"
             placeholder="Add your articles here, separated by spaces, commas, or semicolons..."
              />
           <input type="submit" value="Fetch!" />
         </form>
         <ul>
-          { articles && articles.map(article => <ArticleCard key={article.url} article={article} /> )}
+          { articles && articles.map(article => <ArticleCard key={article.url} article={article} delete={this.handleDelete} /> )}
         </ul>
       </div>
     );
