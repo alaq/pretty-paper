@@ -15,6 +15,7 @@ class App extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+    this.export = this.export.bind(this);
   }
 
   handleChange (evt) {
@@ -23,7 +24,6 @@ class App extends Component {
 
   addToArticleList (url) {
     url = 'https://mercury.postlight.com/parser?url=' + url;
-    console.log('lets get the article', url);
     axios({
       url: url,
       headers: {
@@ -41,18 +41,24 @@ class App extends Component {
       urls: evt.target.urls.value
     })
     const urls = evt.target.urls.value;
-    urls.split(' ').forEach(url => this.addToArticleList(url));
+
+    var expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+    var regex = new RegExp(expression);
+    urls.match(regex).forEach(url => this.addToArticleList(url));
+
   }
 
   handleDelete (url) {
-    console.log('lets delete')
     const articles = this.state.articles.filter(article => article.url !== url);
     this.setState({articles: articles});
   }
 
+  export () {
+    this.state.articles.forEach(article => console.dir(article));
+  }
+
   render() {
     const { articles } = this.state;
-    console.log(articles)
     return (
       <div className="App">
         <header className="App-header">
@@ -75,6 +81,7 @@ class App extends Component {
         <ul>
           { articles && articles.map(article => <ArticleCard key={article.url} article={article} delete={this.handleDelete} /> )}
         </ul>
+        <button onClick={this.export}>PDF</button>
       </div>
     );
   }
